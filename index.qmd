@@ -110,7 +110,7 @@ dreamy_mean = dreamy_data['post_surgical_score'].mean()
 duck_mean = duck_data['post_surgical_score'].mean()
 
 # Create figure with professional styling
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(7, 4))
 
 # Plot Doc Dreamy (circles, blue)
 ax.scatter(dreamy_data['patient'], dreamy_data['post_surgical_score'], 
@@ -278,7 +278,7 @@ dreamy_mean_randomized = dreamy_randomized['post_surgical_score'].mean()
 duck_mean_randomized = duck_randomized['post_surgical_score'].mean()
 
 # Create figure with professional styling
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(7, 4))
 
 # Plot Doc Dreamy (circles, blue)
 ax.scatter(dreamy_randomized['patient'], dreamy_randomized['post_surgical_score'], 
@@ -344,7 +344,7 @@ dreamy_mean = dreamy_data['post_surgical_score'].mean()
 duck_mean = duck_data['post_surgical_score'].mean()
 
 # Create figure with professional styling
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(7, 4))
 
 # Add shaded rectangular overlay highlighting severity between -1 and 1
 ax.axvspan(-1, 1, alpha=0.15, color='gray', zorder=0)
