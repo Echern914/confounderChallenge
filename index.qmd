@@ -8,6 +8,11 @@ execute:
   eval: true
 ---
 
+## Introduction
+
+In the world of data analysis and causal inference, things are rarely as straightforward as they appear. What looks like a clear relationship between two variables often masks a more complex story—one where hidden factors pull the strings behind the scenes. This report explores how common-cause confounders can create misleading associations, and demonstrates two powerful tools for uncovering the truth: randomization and stratification.
+
+Through a compelling case study comparing two surgeons, we'll see how observational data can lead us astray, and how proper experimental design and analytical techniques can reveal what's really happening beneath the surface.
 
 ## The Paradox: Who *Really* Is the Better Surgeon?
 
@@ -91,7 +96,9 @@ print(f"Number of patients: {len(patients_df)}")
 patients_df.head()
 ```
 
-Let's use data to figure out which surgeon performs better. @fig-plot-outcomes shows the post-surgical symptom score for 100 patients. Doc Duck's average post-surgical symptom score is 3.38 while Doc Dreamy's average is 2.8. Doc Dreamy performs better since lower scores indicate better outcomes. One might ask if the difference in average post-surgical symptom score is statistically significant. A two-sample t-test reveals a statistically significant difference (t = -2.317, p = 0.023). 
+To determine which surgeon performs better, we analyzed post-surgical symptom scores for 100 patients. As shown in @fig-plot-outcomes, Doc Dreamy's patients have an average score of 2.8, while Doc Duck's patients average 3.38. Since lower scores indicate better outcomes, Doc Dreamy appears to be the superior surgeon. A two-sample t-test confirms this difference is statistically significant (t = -2.317, p = 0.023).
+
+At first glance, the conclusion seems clear: choose Doc Dreamy. But as we'll see, this initial assessment misses a crucial piece of the puzzle. 
 
 ```{python}
 #| label: fig-plot-outcomes
@@ -158,19 +165,19 @@ plt.show()
 
 ## The Hidden Confounder: Patient Severity Explains It All
 
-As readers of @fig-plot-outcomes, the easiest path for our brains is to accept the mental model of surgical outcomes depicted in @fig-example-node.
+When we look at @fig-plot-outcomes, our brains naturally gravitate toward the simplest explanation: the mental model shown in @fig-example-node.
 
 ![DAG Model Explaining Surgical Outcomes](dag-example-node.png){#fig-example-node width=50%}
 
 The obvious conclusion from using the mental model of @fig-example-node and the data shown in @fig-plot-outcomes is that **Doc Dreamy is the superior surgeon because his patients' scores are lower than Doc Duck's patients' scores**.
 
-However, a "common cause" confounder can create an association between $X$ and $Y$ that is not causal in nature. For example, if $X$ is puddles on the road and $Y$ is people with umbrellas, it does not mean that the puddles cause people to have umbrellas. Instead, a common cause for both, namely rain ($Z$), is the sole reason for the observed association. The presence of rain causes both puddles and people to carry umbrellas, creating a spurious correlation between the two.
+However, a "common cause" confounder can create an association between two variables that isn't actually causal. Consider a classic example: if we observe puddles on the road ($X$) and people carrying umbrellas ($Y$), we might mistakenly conclude that puddles cause people to carry umbrellas. But the real explanation is simpler: rain ($Z$) causes both puddles and umbrella-carrying. This creates a spurious correlation that masks the true causal structure.
 
-As Nassim Taleb hints, there may be an alternate explanation. Consider the model shown in @fig-example2-node.  Might there be an unaccounted for common cause that is causing the association between surgeon choice and surgical outcomes?
+As Nassim Taleb suggests, there may be a similar explanation in our surgeon study. Consider the model shown in @fig-example2-node. Could there be a hidden common cause driving the association between surgeon choice and surgical outcomes?
 
 ![DAG Model Explaining Surgical Outcomes](dag-example2-node.png){#fig-example2-node width=50%}
 
-A possible common-cause story would go something like this. Both surgeons have full schedules, with Dr. Dreamy scheduling surgeries 3 weeks in advance and Dr. Duck scheduling surgeries 1 week in advance. As such, patients who are not in a rush, usually those with low severity, are more likely to choose Dr. Dreamy based on his website and picture. However, patients who are in more of a rush, usually those with high severity, are more likely to choose Dr. Duck based on his availability and the fact that he is the only surgeon who can see them immediately.
+Here's what might actually be happening. Both surgeons maintain full schedules, but with different booking timelines: Dr. Dreamy schedules surgeries 3 weeks in advance, while Dr. Duck can accommodate patients within 1 week. This creates a natural sorting mechanism: patients with lower severity, who aren't in urgent need, can wait for Dr. Dreamy's availability and are more likely to choose him based on his polished online presence. Meanwhile, patients with higher severity, who need immediate care, gravitate toward Dr. Duck simply because he's available sooner—often the only surgeon who can see them right away.
 
 ::: {.callout-warning title="Assumption: Slow Progression of Patient Severity" icon=false}
 For simplicity, we assume that patient severity progresses slowly enough that a 2-week delay (i.e., waiting for Dr. Dreamy's availability) has zero effect on surgical outcomes. This delay affects only how quickly patients receive surgical relief, not the eventual outcome itself. While time-to-surgery can be an important factor in other contexts, here we focus solely on whether initial patient severity might create a spurious or biased association between surgeon choice and outcomes.
@@ -180,14 +187,13 @@ For simplicity, we assume that patient severity progresses slowly enough that a 
 
 The gold standard to establish causation is a randomized controlled trial. Instead of letting patients choose their surgeon, we randomly assign them to either Dr. Dreamy or Dr. Duck.
 
-This is precisely the kind of problem randomization can solve. By randomly assigning patients to surgeons, we break the potential confounding relationship where patient severity ends up correlated with choice of surgeon. Since assignment is now random rather than based on patient choice between a good-looking doctor and a doctor available more quickly, we eliminate this confounding pathway. This break, pictured in @fig-example3-node, allows us to assess whether surgeon identity truly matters for surgical success, or if the observed association was merely due to patient severity influencing both surgeon choice and outcomes.
+This is exactly the kind of problem randomization can solve. By randomly assigning patients to surgeons, we break the confounding relationship between patient severity and surgeon choice. When assignment is random—rather than driven by patient preferences or availability constraints—we eliminate the confounding pathway entirely. This change, illustrated in @fig-example3-node, allows us to isolate the true causal effect of surgeon identity on outcomes, separate from any influence of patient severity.
 
 ![DAG Model Explaining Surgical Outcomes](dag-example3-node.png){#fig-example3-node width=65%}
 
+As shown in @fig-example3-node, randomization fundamentally changes the causal structure. In this scenario, patient severity ($Z$) no longer influences surgeon choice ($X$). Instead, randomization ($R$) completely determines surgeon assignment ($X$). This breaks the confounding relationship, allowing us to assess whether surgeon identity truly matters for surgical outcomes.
 
-@fig-example3-node shows the DAG model for the randomization scenario. In this scenario, patient severity ($Z$) is no longer a cause of surgeon choice ($X$). Instead, randomization ($R$) completely determines surgeon assignment ($X$). This breaks the confounding relationship between patient severity and surgeon choice, allowing us to assess whether the surgeons themselves truly matter for surgical outcomes.
-
-### Our data doesn't have counterfactuals, how can we know what would have happened to those patients if we had randomized?
+### The Counterfactual Problem
 
 ::: {.callout-note title="What is a counterfactual?" icon=false}
 A *counterfactual* is the answer to a "what if" question: what would have happened if circumstances had been different? Specifically, what would each patient's outcome have been if they had been assigned to the *other* surgeon, holding everything else constant? These are the unobserved alternative outcomes—the outcomes that didn't happen but could have happened under different treatment assignment.
@@ -195,7 +201,7 @@ A *counterfactual* is the answer to a "what if" question: what would have happen
 
 Unfortunately, we can't observe what didn't happen. The patients we already observed went to the surgeon they chose (or who was available), and we'll never know their outcomes under the alternative assignment. This is the fundamental problem of causal inference: we only see one world, not the parallel universe where everything else was held constant but the treatment differed.
 
-Since we cannot rerun history with randomization, we run an experiment to collect the data we need. So, we randomly assigned a sequence of 100 patients to either Dr. Dreamy or Dr. Duck and observed the following data:
+Since we cannot rerun history with randomization, we must run an experiment to collect new data. We randomly assigned 100 patients to either Dr. Dreamy or Dr. Duck and observed their outcomes:
 
 ```{python}
 #| label: simulate-data-randomized
@@ -259,7 +265,9 @@ print(f"Number of randomized patients: {len(patients_randomized_df)}")
 patients_randomized_df.head()
 ```
 
-@fig-plot-outcomes-randomized shows the post-surgical symptom score for 100 patients under randomized assignment. Doc Duck's average post-surgical symptom score is 2.71 while Doc Dreamy's average is 3.46. Doc Duck performs better since lower scores indicate better outcomes. With randomization breaking the confounding relationship, we can now properly assess the causal effect. A two-sample t-test reveals a statistically significant difference (t = 2.734, p = 0.007).  **Not only is Dr. Dreamy not the better surgeon, he is actually the worse surgeon!**
+The results from @fig-plot-outcomes-randomized tell a completely different story. Under randomized assignment, Doc Duck's patients have an average score of 2.71, while Doc Dreamy's patients average 3.46. Since lower scores indicate better outcomes, Doc Duck is clearly the superior surgeon. With randomization breaking the confounding relationship, we can now properly assess the true causal effect. A two-sample t-test confirms this difference is statistically significant (t = 2.734, p = 0.007). 
+
+**The shocking conclusion: Not only is Dr. Dreamy not the better surgeon—he is actually the worse surgeon!** The observational data had it completely backwards.
 
 ```{python}
 #| label: fig-plot-outcomes-randomized
@@ -326,12 +334,15 @@ plt.show()
 
 ## Solution 2: Stratification — When You Can't Randomize
 
-The key to handling a common cause confounder is to stratify by the common cause. In general, this means we examine the relationship between treatment and outcome within groups that share the same value of the confounder. In our example, this means we look at patients of similar severity and compare the outcomes of the surgeons for patients of similar severity. There are mathematically sophisticated ways to do this, but here we demonstrate it visually. Since patient number lacks inherent meaning, the following figure shows patient severity on the x-axis and post-surgical symptom score on the y-axis.  
+Randomization isn't always possible or ethical. In such cases, we can still handle confounding through stratification. The key is to examine the relationship between treatment and outcome within groups that share the same value of the confounder. In our example, this means looking at patients of similar severity and comparing surgeon outcomes within those groups.
+
+While there are sophisticated mathematical approaches to stratification, we'll demonstrate the concept visually. @fig-plot-outcomes-severity plots patient severity on the x-axis and post-surgical symptom score on the y-axis, revealing how severity affects both surgeon assignment and outcomes.  
 
 ```{python}
 #| label: fig-plot-outcomes-severity
 #| fig-cap: "Post-Surgical Symptom Score (lower is better) by Patient and Severity"
 #| echo: false
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -394,20 +405,20 @@ plt.show()
 
 ```
 
-Looking at @fig-plot-outcomes-severity, the value of stratifying by severity is visually most obvious with initial patient severity scores between -1 and 1 (highlighted in the overlay). We chose this region because it shows substantial overlap between the two surgeons—both surgeons have considerable data within this range, making it an ideal region for comparing their performance. Outside of this range, there is less data available for making direct comparisons: Doc Duck sees more of the higher-severity patients (severity > 1), while Doc Dreamy sees more of the lower-severity patients (severity < -1).
+Examining @fig-plot-outcomes-severity reveals the confounding pattern clearly. The most informative region is between severity scores of -1 and 1 (highlighted in gray), where both surgeons have substantial patient overlap. This overlap provides a fair comparison ground. Outside this range, direct comparisons become difficult: Doc Duck treats more high-severity patients (severity > 1), while Doc Dreamy sees more low-severity patients (severity < -1).
 
-Within the highlighted region, Doc Dreamy's blue circles tend to be higher (worse) than Doc Duck's red triangles for these patients. It is also obvious that Doc Duck is seeing the more severe patients overall, as his red triangles are generally to the right of Doc Dreamy's blue circles on the x-axis. This is exactly what we would expect if patient severity were a common cause of surgeon choice and surgical outcomes. Despite the aggregate statistics pointing to Doc Dreamy having lower (better) post-surgical symptom scores on average, our visual analysis of this overlapping region leads us to conclude that Doc Duck is actually the better surgeon—a conclusion that would be obscured if we only looked at the means without stratifying by severity.
+Within the highlighted overlap region, a telling pattern emerges: Doc Dreamy's patients (blue circles) tend to have higher (worse) scores than Doc Duck's patients (red triangles) at similar severity levels. The spatial distribution also confirms the confounding: Doc Duck's patients cluster toward the right (higher severity), while Doc Dreamy's patients cluster toward the left (lower severity).
+
+This visualization reveals what the aggregate statistics hide: when comparing patients of similar severity, Doc Duck consistently outperforms Doc Dreamy. The apparent advantage of Doc Dreamy disappears once we account for patient severity—exactly what we'd expect if severity were a common cause of both surgeon choice and outcomes.
 
 ## Conclusion: Defending Against Confounding
 
-Here's the problem with graphs and statistics in general: the numbers can easily mislead you. Or rather, you can be misled *by* the numbers when you don't understand what they're really telling you.
+This case study illustrates a fundamental challenge in data analysis: numbers can mislead us when we don't understand what they're really measuring. When we simply looked at raw outcomes, Doc Dreamy appeared superior. But that surface-level association masked a deeper truth.
 
-When you just look at the raw data and ask who had better outcomes, Doc Dreamy wins. Lower scores look great on paper. But here's where it gets important: that association doesn't mean what you think it means. Correlation is not causation, and we all know that, but we forget it every single time because our brains are wired to see patterns and assign causes.
+The hidden factor was patient severity—operating like a puppeteer behind the curtain, directing easier cases to Doc Dreamy and harder cases to Doc Duck. Without accounting for this confounder, we couldn't distinguish between "Doc Dreamy is a better surgeon" and "Doc Dreamy got lucky with his patient assignment." This is why correlation doesn't imply causation: our brains are wired to see patterns and assign causes, but we often miss the third variable pulling the strings.
 
-The real villain here is patient severity. It operates like a puppeteer behind the curtain, making Doc Dreamy look good by sending him easier cases while sending Doc Duck the harder ones. When you don't randomize, you can't tell the difference between "Doc Dreamy is a better surgeon" and "Doc Dreamy got lucky with his patient assignment."  On any graph or in any headline, look for the common-cause-confounder villian that is unaccounted for.
+Randomization provides the gold-standard defense. By randomly assigning patients, we break the confounding pathway and reveal the true causal effect. In our randomized experiment, the truth emerged: Doc Duck is actually the better surgeon—the one who doesn't look the part but delivers superior results.
 
-Randomization is an excellent defense against this kind of confounding. Flip a coin, assign patients randomly, and suddenly the puppeteer loses control. Now you can actually see who the better surgeon is. And the surprise is that it's the one who doesn't look the part. The data wasn't lying; it was just answering a different question than you thought you were asking.
+When randomization isn't possible, stratification offers a powerful alternative. By comparing outcomes within groups of similar patient severity, we compare apples to apples rather than apples to oranges. It requires more careful analysis, but it's far better than being misled by confounding.
 
-If you can't randomize, and that's most of the time, you stratify. Look within groups of similar patient severity. Compare apples to apples, not apples to oranges. It's more work, and it's less satisfying than a clean randomized trial, but it's better than being fooled by confounding.
-
-The take-home lesson: The world is messy, and the numbers will mislead you if you let them. But if you understand the structure of the problem, if you draw the DAG and think about what causes what, you can defend yourself against being fooled. Randomization when you can, stratification when you can't. The tools are simple. The hard part is remembering to use them.
+The takeaway is simple but profound: the world is messy, and data can deceive us if we let it. But by understanding the causal structure—by drawing the DAG and thinking carefully about what causes what—we can defend against being fooled. Use randomization when you can, stratification when you can't. The tools are straightforward; the challenge is remembering to apply them.
