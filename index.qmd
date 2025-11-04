@@ -332,7 +332,6 @@ The key to handling a common cause confounder is to stratify by the common cause
 #| label: fig-plot-outcomes-severity
 #| fig-cap: "Post-Surgical Symptom Score (lower is better) by Patient and Severity"
 #| echo: false
-
 import matplotlib.pyplot as plt
 import numpy as np
 

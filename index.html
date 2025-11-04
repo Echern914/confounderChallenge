@@ -20,41 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 /* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
@@ -178,7 +143,7 @@ window.Quarto = {
 <div class="cell-output cell-output-stdout">
 <pre><code>Number of patients: 100</code></pre>
 </div>
-<div id="load-data-python" class="cell-output cell-output-display" data-execution_count="16">
+<div id="load-data-python" class="cell-output cell-output-display" data-execution_count="23">
 <div>
 
 
@@ -333,7 +298,7 @@ Figure&nbsp;4: DAG Model Explaining Surgical Outcomes
 <div class="cell-output cell-output-stdout">
 <pre><code>Number of randomized patients: 100</code></pre>
 </div>
-<div id="load-data-randomized-python" class="cell-output cell-output-display" data-execution_count="19">
+<div id="load-data-randomized-python" class="cell-output cell-output-display" data-execution_count="26">
 <div>
 
 
@@ -416,65 +381,6 @@ Figure&nbsp;5: Post-Surgical Symptom Score (lower is better) for randomized pati
 <h2 class="anchored" data-anchor-id="solution-2-stratification-when-you-cant-randomize">Solution 2: Stratification — When You Can’t Randomize</h2>
 <p>The key to handling a common cause confounder is to stratify by the common cause. In general, this means we examine the relationship between treatment and outcome within groups that share the same value of the confounder. In our example, this means we look at patients of similar severity and compare the outcomes of the surgeons for patients of similar severity. There are mathematically sophisticated ways to do this, but here we demonstrate it visually. Since patient number lacks inherent meaning, the following figure shows patient severity on the x-axis and post-surgical symptom score on the y-axis.</p>
 <div id="cell-fig-plot-outcomes-severity" class="cell" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Separate observational data by doctor</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>dreamy_data <span class="op">=</span> patients_df[patients_df[<span class="st">'doctor_name'</span>] <span class="op">==</span> <span class="st">'Doc Dreamy'</span>]</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>duck_data <span class="op">=</span> patients_df[patients_df[<span class="st">'doctor_name'</span>] <span class="op">==</span> <span class="st">'Doc Duck'</span>]</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate means</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>dreamy_mean <span class="op">=</span> dreamy_data[<span class="st">'post_surgical_score'</span>].mean()</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>duck_mean <span class="op">=</span> duck_data[<span class="st">'post_surgical_score'</span>].mean()</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create figure with professional styling</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Add shaded rectangular overlay highlighting severity between -1 and 1</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>ax.axvspan(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, alpha<span class="op">=</span><span class="fl">0.15</span>, color<span class="op">=</span><span class="st">'gray'</span>, zorder<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot Doc Dreamy (circles, blue)</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>ax.scatter(dreamy_data[<span class="st">'severity'</span>], dreamy_data[<span class="st">'post_surgical_score'</span>], </span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>           marker<span class="op">=</span><span class="st">'o'</span>, color<span class="op">=</span><span class="st">'#4E79A7'</span>, s<span class="op">=</span><span class="dv">50</span>, alpha<span class="op">=</span><span class="fl">0.7</span>, </span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>           label<span class="op">=</span><span class="st">'Doc Dreamy'</span>, zorder<span class="op">=</span><span class="dv">3</span>)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot Doc Duck (triangles, coral/red-orange)</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>ax.scatter(duck_data[<span class="st">'severity'</span>], duck_data[<span class="st">'post_surgical_score'</span>], </span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>           marker<span class="op">=</span><span class="st">'^'</span>, color<span class="op">=</span><span class="st">'#E15759'</span>, s<span class="op">=</span><span class="dv">50</span>, alpha<span class="op">=</span><span class="fl">0.7</span>, </span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>           label<span class="op">=</span><span class="st">'Doc Duck'</span>, zorder<span class="op">=</span><span class="dv">3</span>)</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Add horizontal dashed lines for means</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>ax.axhline(y<span class="op">=</span>dreamy_mean, color<span class="op">=</span><span class="st">'#4E79A7'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, </span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>           alpha<span class="op">=</span><span class="fl">0.7</span>, zorder<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>ax.axhline(y<span class="op">=</span>duck_mean, color<span class="op">=</span><span class="st">'#E15759'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, linewidth<span class="op">=</span><span class="fl">1.5</span>, </span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>           alpha<span class="op">=</span><span class="fl">0.7</span>, zorder<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Styling</span></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Initial Patient Severity'</span>, fontsize<span class="op">=</span><span class="dv">12</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>)</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Post-Surgical Symptom Score (Lower is Better)'</span>, fontsize<span class="op">=</span><span class="dv">12</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>)</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Post-Surgical Symptom Score by Patient Severity'</span>, </span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>             fontsize<span class="op">=</span><span class="dv">14</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>, pad<span class="op">=</span><span class="dv">15</span>)</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>ax.grid(<span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.3</span>, linestyle<span class="op">=</span><span class="st">'-'</span>, linewidth<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">'upper right'</span>, fontsize<span class="op">=</span><span class="dv">11</span>, framealpha<span class="op">=</span><span class="fl">0.9</span>)</span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Add text annotations with shape symbols for means</span></span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Position annotations on the right side of the plot</span></span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>x_max <span class="op">=</span> <span class="bu">max</span>(patients_df[<span class="st">'severity'</span>].<span class="bu">max</span>(), <span class="bu">abs</span>(patients_df[<span class="st">'severity'</span>].<span class="bu">min</span>())) <span class="op">*</span> <span class="fl">1.1</span></span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>ax.text(x_max <span class="op">*</span> <span class="fl">0.95</span>, dreamy_mean, <span class="ss">f'○ </span><span class="sc">{</span>dreamy_mean<span class="sc">:.2f}</span><span class="ss">'</span>, </span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">'#4E79A7'</span>, fontsize<span class="op">=</span><span class="dv">11</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>,</span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>        verticalalignment<span class="op">=</span><span class="st">'center'</span>, horizontalalignment<span class="op">=</span><span class="st">'right'</span>,</span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>        bbox<span class="op">=</span><span class="bu">dict</span>(boxstyle<span class="op">=</span><span class="st">'round,pad=0.3'</span>, facecolor<span class="op">=</span><span class="st">'white'</span>, </span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>                 edgecolor<span class="op">=</span><span class="st">'#4E79A7'</span>, alpha<span class="op">=</span><span class="fl">0.8</span>), zorder<span class="op">=</span><span class="dv">4</span>)</span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>ax.text(x_max <span class="op">*</span> <span class="fl">0.95</span>, duck_mean, <span class="ss">f'△ </span><span class="sc">{</span>duck_mean<span class="sc">:.2f}</span><span class="ss">'</span>, </span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">'#E15759'</span>, fontsize<span class="op">=</span><span class="dv">11</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>,</span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>        verticalalignment<span class="op">=</span><span class="st">'center'</span>, horizontalalignment<span class="op">=</span><span class="st">'right'</span>,</span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>        bbox<span class="op">=</span><span class="bu">dict</span>(boxstyle<span class="op">=</span><span class="st">'round,pad=0.3'</span>, facecolor<span class="op">=</span><span class="st">'white'</span>, </span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>                 edgecolor<span class="op">=</span><span class="st">'#E15759'</span>, alpha<span class="op">=</span><span class="fl">0.8</span>), zorder<span class="op">=</span><span class="dv">4</span>)</span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjust layout</span></span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div id="fig-plot-outcomes-severity" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
